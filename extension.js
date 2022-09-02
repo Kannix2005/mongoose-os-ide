@@ -107,6 +107,14 @@ const mosView = {
         }
       },
       {
+        label: 'Build remotely',
+        command: { command: 'mos.buildRemotely' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'build-online.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'build-online.svg')
+        }
+      },
+      {
         label: 'Flash',
         command: { command: 'mos.flash' },
         iconPath: {
@@ -168,6 +176,11 @@ const mosView = {
         label: `Board: ${mosBoard || '<click to set>'}`,
         command: { command: 'mos.setBoard' }
       },
+
+      {
+        label: `Remote build server: ${mosBuildServer || '<click to set>'}`,
+        command: { command: 'mos.setBuildServer' }
+      },
     ];
     if (mosPort) {
       rootItems.push({
@@ -213,6 +226,7 @@ module.exports = {
 
     mosPort = vscode.workspace.getConfiguration('mos').get('port');
     mosBoard = vscode.workspace.getConfiguration('mos').get('board');
+    mosBuildServer = vscode.workspace.getConfiguration('mos').get('buildServer');
     if (mosPort) refreshFS();
 
     runMosCommandGetOutput(['ports']).catch(
@@ -243,6 +257,15 @@ module.exports = {
       vscode.window.showQuickPick(Object.keys(boards)).then(v => {
         mosBoard = v;
         vscode.workspace.getConfiguration('mos').update('board', v)
+        mosView._onDidChangeTreeData.fire();
+      });
+    });
+
+    vscode.commands.registerCommand('mos.setBuildServer', (prompt = 'Enter the build server adress (e.g. 10.10.10.10:8000') => {
+
+      vscode.window.showInputBox().then(v => {
+        mosBuildServer = v;
+        vscode.workspace.getConfiguration('mos').update('buildServer', v)
         mosView._onDidChangeTreeData.fire();
       });
     });
@@ -299,6 +322,15 @@ module.exports = {
 
     vscode.commands.registerCommand('mos.buildLocally', () => {
       return runMosCommand(['build', "--local", "--verbose"], cmdOut)
+        .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
+        .catch(err => {
+          cmdOut.show(true)
+          vscode.window.showErrorMessage(err)
+        });
+    });
+
+    vscode.commands.registerCommand('mos.buildRemotely', (buildServer) => {
+      return runMosCommand(['build', "--server ${buildServer}", "--verbose"], cmdOut)
         .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
         .catch(err => {
           cmdOut.show(true)
