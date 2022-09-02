@@ -33,6 +33,11 @@
           "type": "string",
           "default": "",
           "description": "Selected board"
+        },
+        "mos.buildServer": {
+          "type": "string",
+          "default": "",
+          "description": "Selected build server"
         }
       }
     },
@@ -72,6 +77,10 @@
       {
         "command": "mos.buildLocally",
         "title": "MGOS: Build locally"
+      },
+      {
+        "command": "mos.buildRemotely",
+        "title": "MGOS: Build remotely"
       },
       {
         "command": "mos.build",
