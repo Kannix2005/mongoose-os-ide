@@ -330,7 +330,7 @@ module.exports = {
     });
 
     vscode.commands.registerCommand('mos.buildRemotely', (buildServer) => {
-      return runMosCommand(['build', "--server ${buildServer}", "--verbose"], cmdOut)
+      return runMosCommand(['build', "--server " + buildServer, "--verbose"], cmdOut)
         .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
         .catch(err => {
           cmdOut.show(true)
