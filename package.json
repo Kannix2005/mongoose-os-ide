@@ -2,7 +2,7 @@
   "name": "mongoose-os-ide-extended",
   "displayName": "Mongoose OS IDE extended",
   "description": "Extended development environment for Mongoose OS, forked from official repository",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://mongoose-os.com",
   "publisher": "StefanAltheimer",
   "repository": "https://github.com/kannix2005/mongoose-os-ide",
@@ -75,7 +75,15 @@
         "title": "MGOS: Run mos command"
       },
       {
+        "command": "mos.abort",
+        "title": "MGOS: Abort all tasks"
+      },
+      {
         "command": "mos.buildLocally",
+        "title": "MGOS: Build locally"
+      },
+      {
+        "command": "mos.buildLocallyAndFlash",
         "title": "MGOS: Build locally"
       },
       {

@@ -5,6 +5,7 @@ const vscode = require('vscode');
 
 let mosPort = '';            // Selected port
 let mosBoard = '';           // Selected board
+let mosBuildServer = '';
 let mosProcess = undefined;  // Currently running mos command
 let deviceFiles = [];        // Device file list
 let numPortWaiters = 0;      // Number of commands waiting for port
@@ -44,6 +45,7 @@ const runMosCommand = (args, out, nomarks) => new Promise((resolve, reject) => {
   return killMosCommandAndWait().then(() => {
     let fullArgs = args;
     if (mosPort) fullArgs = fullArgs.concat(['--port', mosPort]);
+    if (mosBuildServer) fullArgs = fullArgs.concat(['--server', mosBuildServer]);
     if (args[0] === 'build' && boards[mosBoard]) {
       fullArgs = fullArgs.concat(boards[mosBoard].split(/\s+/));
     }
@@ -91,8 +93,24 @@ const mosView = {
   getChildren: el => {
     let rootItems = [
       {
+        label: 'Abort all tasks',
+        command: { command: 'mos.abort' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'build-local.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'build-local.svg')
+        }
+      },
+      {
         label: 'Build locally',
         command: { command: 'mos.buildLocally' },
+        iconPath: {
+          light: path.join(__filename, '..', 'resources', 'icons', 'light', 'build-local.svg'),
+          dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'build-local.svg')
+        }
+      },
+      {
+        label: 'Build locally and flash',
+        command: { command: 'mos.buildLocallyAndFlash' },
         iconPath: {
           light: path.join(__filename, '..', 'resources', 'icons', 'light', 'build-local.svg'),
           dark: path.join(__filename, '..', 'resources', 'icons', 'dark', 'build-local.svg')
@@ -320,17 +338,38 @@ module.exports = {
         .catch(err => vscode.window.showErrorMessage(err));
     });
 
+    vscode.commands.registerCommand('mos.abort', () => {
+      killMosCommandAndWait();
+      cmdOut.append('Tasks aborted');
+      cmdOut.show(true);
+    });
+
     vscode.commands.registerCommand('mos.buildLocally', () => {
       return runMosCommand(['build', "--local", "--verbose"], cmdOut)
-        .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
+        .then((bs) => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
         .catch(err => {
           cmdOut.show(true)
           vscode.window.showErrorMessage(err)
         });
     });
 
-    vscode.commands.registerCommand('mos.buildRemotely', (buildServer) => {
-      return runMosCommand(['build', "--server " + buildServer, "--verbose"], cmdOut)
+    vscode.commands.registerCommand('mos.buildLocallyAndFlash', () => {
+      return runMosCommand(['build', "--local", "--verbose"], cmdOut)
+        .then(() => {
+            vscode.window.showInformationMessage('MGOS: Build succeeded!');
+            runMosCommand(['flash'], cmdOut)
+            .then(() => vscode.window.showInformationMessage('MGOS: Flash succeeded!'))
+            .catch(err => vscode.window.showErrorMessage(err));
+          }
+        )
+        .catch(err => {
+          cmdOut.show(true)
+          vscode.window.showErrorMessage(err)
+        });
+    });
+
+    vscode.commands.registerCommand('mos.buildRemotely', () => {
+      return runMosCommand(['build', "--verbose"], cmdOut)
         .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
         .catch(err => {
           cmdOut.show(true)
@@ -339,12 +378,16 @@ module.exports = {
     });
 
     vscode.commands.registerCommand('mos.build', () => {
+      bs = mosBuildServer;
+      mosBuildServer = undefined;
       return runMosCommand(['build'], cmdOut)
-        .then(() => vscode.window.showInformationMessage('MGOS: Build succeeded!'))
+        .then(() => {
+          vscode.window.showInformationMessage('MGOS: Build succeeded!')
+        })
         .catch(err => {
           cmdOut.show(true)
           vscode.window.showErrorMessage(err)
-        });
+        }).finally((bs) => {mosBuildServer = bs});
     });
 
     vscode.commands.registerCommand('mos.flash', () => {
