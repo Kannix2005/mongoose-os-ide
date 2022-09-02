@@ -1,11 +1,11 @@
 {
   "name": "mongoose-os-ide",
-  "displayName": "Mongoose OS IDE",
-  "description": "Development environment for Mongoose OS",
-  "version": "0.6.0",
+  "displayName": "Mongoose OS IDE extended",
+  "description": "Extended development environment for Mongoose OS, forked from official repository",
+  "version": "1.0.0",
   "homepage": "https://mongoose-os.com",
-  "publisher": "mongoose-os",
-  "repository": "https://github.com/cesanta/mongoose-os-ide",
+  "publisher": "kannix2005",
+  "repository": "https://github.com/kannix2005/mongoose-os-ide",
   "engines": {
     "vscode": "^1.28.0"
   },
